@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import {
-    ColumnDef,
+    // ColumnDef,
     ColumnFiltersState,
     SortingState,
     flexRender,
@@ -64,75 +64,129 @@ import { Row } from "@tanstack/react-table"
 //     nome: string
 //     download: string
 // }
-
+interface TableInstance {
+    getIsAllPageRowsSelected: () => boolean;
+    getIsSomePageRowsSelected: () => boolean;
+    toggleAllPageRowsSelected: (value: boolean) => void;
+}
 export type Payment = {
     id: string
     name: string
-    download: string
+    caminho: string
+    tamanho: number
 }
 
-export const columns: ColumnDef<Payment>[] = [
-    {
-        id: "select",
-        header: ({ table }) => (
-            <Checkbox
-                checked={
-                    table.getIsAllPageRowsSelected() ||
-                    (table.getIsSomePageRowsSelected() && "indeterminate")
-                }
-                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                aria-label="Select all"
-            />
-        ),
-        cell: ({ row }) => (
-            <Checkbox
-                checked={row.getIsSelected()}
-                onCheckedChange={(value) => row.toggleSelected(!!value)}
-                aria-label="Select row"
-            />
-        ),
-        enableSorting: false,
-        enableHiding: false,
-    },
-    {
-        accessorKey: "name",
-        header: "Name",
-        cell: ({ row }) => (
-            <div className="capitalize">{row.getValue("name")}</div>
-        ),
-    },
-    {
-        accessorKey: "download",
-        header: () => <div className="text-right">Download</div>,
-        cell: ({ row }) => {
-            <DownloadButton fileName={row.getValue("download")} />
-        },
-    },
-]
+// export const columns: ColumnDef<Payment>[] = [
+//     {
+//         id: "select",
+//         accessorKey: "id",
+//         header: ({ table }) => (
+//             <Checkbox
+//                 checked={
+//                     table.getIsAllPageRowsSelected() ||
+//                     (table.getIsSomePageRowsSelected() && "indeterminate")
+//                 }
+//                 onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+//                 aria-label="Select all"
+//             />
+//         ),
+//         cell: ({ row }: { row: Row<{ id: string; }> }) => (
+//             <Checkbox
+//                 checked={row.getIsSelected()}
+//                 onCheckedChange={(value) => row.toggleSelected(!!value)}
+//                 aria-label="Select row"
+//             />
+//         ),
+//         enableSorting: false,
+//         enableHiding: false,
+//     },
+//     {
+//         accessorKey: "name",
+//         header: "Name",
+//         cell: ({ row }) => (
+//             <div className="capitalize">{row.getValue("name")}</div>
+//         ),
+//     },
+//     {
+//         accessorKey: "download",
+//         header: () => <div className="text-right">Download</div>,
+//         cell: ({ row }) => {
+//             <DownloadButton fileName={row.getValue("download")} />
+//         },
+//     },
+// ]
 
-export default function TableList({ data }: { data: { nome: string; caminho: string }[] }) {
+export default function TableList({ data }: { data: { id: string; nome: string; caminho: string; tamanho: number }[] }) {
+
     const columns = [
+        {
+            id: "select",
+            accessorKey: "id",
+            header: ({ table }: { table: TableInstance }) => (
+                <Checkbox
+                    checked={
+                        table.getIsAllPageRowsSelected() ||
+                        (table.getIsSomePageRowsSelected() && "indeterminate")
+                    }
+                    onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                    aria-label="Select all"
+                />
+            ),
+            cell: ({ row }: { row: Row<{ id: string; nome: string; caminho: string; tamanho: number }> }) => (
+                <Checkbox
+                    checked={row.getIsSelected()}
+                    onCheckedChange={(value) => row.toggleSelected(!!value)}
+                    aria-label="Select row"
+                />
+            ),
+            enableSorting: false,
+            enableHiding: false,
+        },
         {
             accessorKey: "nome",
             header: "Nome",
-            cell: ({ row }: { row: Row<{ nome: string; caminho: string }> }) => (
+            cell: ({ row }: { row: Row<{ id: string; nome: string; caminho: string; tamanho: number }> }) => (
                 <div className="capitalize">{row.getValue("nome")}</div>
             ),
         },
         {
             accessorKey: "caminho",
             header: "Caminho",
-            cell: ({ row }: { row: Row<{ nome: string; caminho: string }> }) => (
+            cell: ({ row }: { row: Row<{ id: string; nome: string; caminho: string; tamanho: number }> }) => (
                 <div className="capitalize">{row.getValue("caminho")}</div>
             ),
         },
         {
-            accessorKey: "download",
-            header: "Download",
-            cell: ({ row }: { row: Row<{ nome: string; caminho: string }> }) => (
-                <DownloadButton fileName={row.getValue("nome")} />
-            ),
+            accessorKey: "tamanho",
+            header: "Tamanho",
+            cell: ({ row }: { row: Row<{ id: string; nome: string; caminho: string; tamanho: number }> }) => {
+                const sizeInBytes: number = row.getValue("tamanho") as number;
+                const sizeInKiloBytes = sizeInBytes / 1024;
+                const sizeInMegaBytes = sizeInKiloBytes / 1024;
+                const sizeInGigaBytes = sizeInMegaBytes / 1024;
+
+                let sizeString = "";
+
+                if (sizeInGigaBytes >= 1) {
+                    sizeString = `${sizeInGigaBytes.toFixed(2)} GB`;
+                } else if (sizeInMegaBytes >= 1) {
+                    sizeString = `${sizeInMegaBytes.toFixed(2)} MB`;
+                } else if (sizeInKiloBytes >= 1) {
+                    sizeString = `${sizeInKiloBytes.toFixed(2)} KB`;
+                } else {
+                    sizeString = `${sizeInBytes} bytes`;
+                }
+
+                return <div className="capitalize">{sizeString}</div>;
+            },
         },
+        // {
+        //     accessorKey: "download",
+        //     header: "Download",
+        //     cell: ({ row }: { row: Row<{ id: string; nome: string; caminho: string }> }) => (
+        //         <DownloadButton fileNames={selectedFiles} />
+        //     ),
+        // },
 
     ];
 
@@ -162,7 +216,8 @@ export default function TableList({ data }: { data: { nome: string; caminho: str
             rowSelection,
         },
     })
-
+    const selectedFiles = table.getFilteredSelectedRowModel().rows.map((row) => row.original.nome);
+    const selectedRowcount = table.getFilteredSelectedRowModel().rows.length;
     return (
         <div className="w-full">
             <div className="flex items-center py-4">
@@ -244,6 +299,7 @@ export default function TableList({ data }: { data: { nome: string; caminho: str
                     </Button>
                 </div>
             </div>
+            <DownloadButton fileNames={selectedFiles} count={selectedRowcount} />
         </div>
     )
 }

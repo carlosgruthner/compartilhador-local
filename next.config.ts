@@ -6,12 +6,12 @@ const nextConfig: NextConfig = {
   publicRuntimeConfig: {
     // ...
   },
-  routes: [
-    {
-      path: "/arquivos",
-      page: "/arquivos",
-    },
-  ],
+  // routes: [
+  //   {
+  //     path: "/arquivos",
+  //     page: "/arquivos",
+  //   },
+  // ],
   // ...
   async rewrites() {
     return [

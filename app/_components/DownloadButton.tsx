@@ -1,35 +1,42 @@
-'use client'
 import { Button } from '@/components/ui/button';
-import React from 'react'
+import React from 'react';
 import { useState, useEffect } from 'react';
 
 interface DownloadProps {
-    fileName: string
+    fileNames: string[];
+    count: number
 }
-const DownloadButton = ({ fileName }: DownloadProps) => {
-    const [downloadUrl, setDownloadUrl] = useState('');
+
+const DownloadButton = ({ fileNames, count }: DownloadProps) => {
+    const [downloadUrls, setDownloadUrls] = useState<string[]>([]);
 
     useEffect(() => {
-        // const fileName = 'webDesigner.png';
-        const filePath = `/compartilhar/${fileName}`;
-
-        fetch(filePath)
-            .then(response => response.blob())
-            .then(blob => {
-                const url = URL.createObjectURL(blob);
-                setDownloadUrl(url);
-            });
-    }, [fileName]);
+        const fetchFiles = async () => {
+            const urls = await Promise.all(fileNames.map((fileName) => {
+                const filePath = `/compartilhar/${fileName}`;
+                return fetch(filePath)
+                    .then(response => response.blob())
+                    .then(blob => URL.createObjectURL(blob));
+            }));
+            setDownloadUrls(urls);
+        };
+        fetchFiles();
+    }, [fileNames]);
 
     const handleDownload = () => {
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = fileName;
-        link.click();
+        fileNames.forEach((fileName, index) => {
+            const link = document.createElement('a');
+            link.href = downloadUrls[index];
+            link.download = fileName;
+            link.click();
+        });
     };
 
     return (
-        <Button onClick={handleDownload} className='text-white'>Baixar</Button>
+        <div>
+            <h1 className='text-sm pb-3'>Arquivos selecionados: <span className='font-bold text-green-500'>{count}</span></h1>
+            <Button onClick={handleDownload} className='text-white'>Baixar</Button>
+        </div>
     );
 };
-export default DownloadButton
+export default DownloadButton;
